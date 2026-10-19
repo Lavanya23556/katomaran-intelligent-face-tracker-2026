@@ -218,3 +218,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Katomaran VisiTrace runtime data & biometrics privacy
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-wal
+*.db-shm
+events.log
+logs/
+data/
+weights/*.pt
+weights/*.onnx
+!weights/.gitkeep
+sample_outputs/images/
+!sample_outputs/images/.gitkeep
+*.mp4
+*.avi
+*.mkv

@@ -1,0 +1,178 @@
+[
+  {
+    "visitor_id": "VIS-0016",
+    "first_seen_at": "2026-10-19T16:31:51.729483+00:00",
+    "last_seen_at": "2026-10-19T16:31:51.742041+00:00",
+    "total_visits": 2,
+    "quality_score": 38.888932823129245,
+    "metadata_json": "{\"track_id\": 40}",
+    "metadata": {
+      "track_id": 40
+    }
+  },
+  {
+    "visitor_id": "VIS-0015",
+    "first_seen_at": "2026-10-19T16:31:50.984539+00:00",
+    "last_seen_at": "2026-10-19T16:31:50.989537+00:00",
+    "total_visits": 2,
+    "quality_score": 39.41224082716238,
+    "metadata_json": "{\"track_id\": 42}",
+    "metadata": {
+      "track_id": 42
+    }
+  },
+  {
+    "visitor_id": "VIS-0014",
+    "first_seen_at": "2026-10-19T16:31:50.619331+00:00",
+    "last_seen_at": "2026-10-19T16:31:50.625563+00:00",
+    "total_visits": 2,
+    "quality_score": 40.48650672074185,
+    "metadata_json": "{\"track_id\": 39}",
+    "metadata": {
+      "track_id": 39
+    }
+  },
+  {
+    "visitor_id": "VIS-0013",
+    "first_seen_at": "2026-10-19T16:31:49.195095+00:00",
+    "last_seen_at": "2026-10-19T16:31:49.199093+00:00",
+    "total_visits": 2,
+    "quality_score": 50.659181175790074,
+    "metadata_json": "{\"track_id\": 25}",
+    "metadata": {
+      "track_id": 25
+    }
+  },
+  {
+    "visitor_id": "VIS-0012",
+    "first_seen_at": "2026-10-19T16:31:49.090271+00:00",
+    "last_seen_at": "2026-10-19T16:31:49.097911+00:00",
+    "total_visits": 2,
+    "quality_score": 35.57593781830518,
+    "metadata_json": "{\"track_id\": 23}",
+    "metadata": {
+      "track_id": 23
+    }
+  },
+  {
+    "visitor_id": "VIS-0011",
+    "first_seen_at": "2026-10-19T16:31:48.968616+00:00",
+    "last_seen_at": "2026-10-19T16:31:48.974713+00:00",
+    "total_visits": 2,
+    "quality_score": 53.12013863615862,
+    "metadata_json": "{\"track_id\": 24}",
+    "metadata": {
+      "track_id": 24
+    }
+  },
+  {
+    "visitor_id": "VIS-0010",
+    "first_seen_at": "2026-10-19T16:31:48.760158+00:00",
+    "last_seen_at": "2026-10-19T16:31:48.765451+00:00",
+    "total_visits": 2,
+    "quality_score": 37.224217597421955,
+    "metadata_json": "{\"track_id\": 22}",
+    "metadata": {
+      "track_id": 22
+    }
+  },
+  {
+    "visitor_id": "VIS-0009",
+    "first_seen_at": "2026-10-19T16:31:47.491618+00:00",
+    "last_seen_at": "2026-10-19T16:31:47.497012+00:00",
+    "total_visits": 2,
+    "quality_score": 36.66174301994171,
+    "metadata_json": "{\"track_id\": 14}",
+    "metadata": {
+      "track_id": 14
+    }
+  },
+  {
+    "visitor_id": "VIS-0008",
+    "first_seen_at": "2026-10-19T16:31:46.741881+00:00",
+    "last_seen_at": "2026-10-19T16:31:46.747796+00:00",
+    "total_visits": 2,
+    "quality_score": 38.46868513116904,
+    "metadata_json": "{\"track_id\": 11}",
+    "metadata": {
+      "track_id": 11
+    }
+  },
+  {
+    "visitor_id": "VIS-0007",
+    "first_seen_at": "2026-10-19T16:31:46.315837+00:00",
+    "last_seen_at": "2026-10-19T16:31:46.324320+00:00",
+    "total_visits": 2,
+    "quality_score": 36.772075351726926,
+    "metadata_json": "{\"track_id\": 10}",
+    "metadata": {
+      "track_id": 10
+    }
+  },
+  {
+    "visitor_id": "VIS-0006",
+    "first_seen_at": "2026-10-19T16:31:45.784195+00:00",
+    "last_seen_at": "2026-10-19T16:31:45.788709+00:00",
+    "total_visits": 2,
+    "quality_score": 42.551585502410745,
+    "metadata_json": "{\"track_id\": 8}",
+    "metadata": {
+      "track_id": 8
+    }
+  },
+  {
+    "visitor_id": "VIS-0005",
+    "first_seen_at": "2026-10-19T16:31:45.769894+00:00",
+    "last_seen_at": "2026-10-19T16:31:45.775103+00:00",
+    "total_visits": 2,
+    "quality_score": 76.95782171201814,
+    "metadata_json": "{\"track_id\": 7}",
+    "metadata": {
+      "track_id": 7
+    }
+  },
+  {
+    "visitor_id": "VIS-0004",
+    "first_seen_at": "2026-10-19T16:31:45.756726+00:00",
+    "last_seen_at": "2026-10-19T16:31:48.744651+00:00",
+    "total_visits": 2,
+    "quality_score": 36.126494627233676,
+    "metadata_json": "{\"track_id\": 6}",
+    "metadata": {
+      "track_id": 6
+    }
+  },
+  {
+    "visitor_id": "VIS-0003",
+    "first_seen_at": "2026-10-19T16:31:45.743393+00:00",
+    "last_seen_at": "2026-10-19T16:31:45.747898+00:00",
+    "total_visits": 2,
+    "quality_score": 62.84960144750355,
+    "metadata_json": "{\"track_id\": 4}",
+    "metadata": {
+      "track_id": 4
+    }
+  },
+  {
+    "visitor_id": "VIS-0002",
+    "first_seen_at": "2026-10-19T16:31:45.730464+00:00",
+    "last_seen_at": "2026-10-19T16:31:45.734262+00:00",
+    "total_visits": 2,
+    "quality_score": 45.93279678838144,
+    "metadata_json": "{\"track_id\": 3}",
+    "metadata": {
+      "track_id": 3
+    }
+  },
+  {
+    "visitor_id": "VIS-0001",
+    "first_seen_at": "2026-10-19T16:31:45.706663+00:00",
+    "last_seen_at": "2026-10-19T16:31:45.720803+00:00",
+    "total_visits": 2,
+    "quality_score": 37.731517550274205,
+    "metadata_json": "{\"track_id\": 1}",
+    "metadata": {
+      "track_id": 1
+    }
+  }
+]

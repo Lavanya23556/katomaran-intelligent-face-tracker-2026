@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisiTrace — Visitor Intelligence System</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="header-bar">
+    <div class="header-inner">
+      <div class="brand-block">
+        <span class="brand-title">VisiTrace</span>
+        <span class="brand-subtitle">Visitor Intelligence &amp; Multi-Face Tracking</span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="badge-status">
+          <span class="status-dot" id="system-status-dot"></span>
+          <span id="system-status-text">Connecting...</span>
+        </div>
+
+        <button class="btn" id="btn-refresh" title="Refresh metrics and events">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Refresh
+        </button>
+
+        <button class="btn" id="btn-show-visitors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Visitors
+        </button>
+
+        <button class="btn" id="btn-show-health">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Diagnostics
+        </button>
+
+        <button class="btn" id="btn-show-config">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Config
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    
+    <!-- KPI Metric Summary Row -->
+    <section class="kpi-grid">
+      <div class="kpi-card highlight-teal">
+        <div class="kpi-label">Unique Visitors</div>
+        <div class="kpi-value" id="kpi-unique-visitors">0</div>
+        <div class="kpi-footer">Persisted registered identities</div>
+      </div>
+
+      <div class="kpi-card highlight-amber">
+        <div class="kpi-label">Active In-Scene</div>
+        <div class="kpi-value" id="kpi-active-visits">0</div>
+        <div class="kpi-footer">Currently tracked sessions</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Total Entries</div>
+        <div class="kpi-value" id="kpi-total-entries">0</div>
+        <div class="kpi-footer">Verified entry events logged</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Total Exits</div>
+        <div class="kpi-value" id="kpi-total-exits">0</div>
+        <div class="kpi-footer">Grace-evaluated visit exits</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Today's Visitors</div>
+        <div class="kpi-value" id="kpi-today-visitors">0</div>
+        <div class="kpi-footer">Distinct visitors today (UTC)</div>
+      </div>
+    </section>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Video Viewport & Source Controls -->
+      <div class="grid-left">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              Live Visual Tracking
+            </h2>
+            <span class="panel-subtitle" id="viewport-source-name">Standby</span>
+          </div>
+
+          <div class="viewport-container">
+            <img id="live-stream-img" class="video-stream-img" src="/api/streams/preview" alt="Live Face Tracking Preview">
+            <div class="viewport-overlay-info">
+              <div class="overlay-pill" id="overlay-fps">FPS: 0.0</div>
+              <div class="overlay-pill" id="overlay-tracks">Tracks: 0</div>
+            </div>
+          </div>
+
+          <!-- Ingestion Source Controls -->
+          <div class="stream-controls">
+            <div class="controls-row">
+              <div class="input-group" style="max-width: 160px; min-width: 130px;">
+                <label class="input-label" for="select-source-type">Input Mode</label>
+                <select id="select-source-type" class="input-field">
+                  <option value="file" selected>Local Video File</option>
+                  <option value="rtsp">RTSP Camera Stream</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label class="input-label" for="input-source-path">Source Path or RTSP URL</label>
+                <input type="text" id="input-source-path" class="input-field font-mono" value="data/sample_videos/video_sample1.mp4" placeholder="e.g. data/sample_videos/video_sample1.mp4 or rtsp://user:pass@host:554/live">
+              </div>
+            </div>
+
+            <div class="controls-row" style="justify-content: space-between;">
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" id="btn-start-stream">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Start Stream
+                </button>
+                <button class="btn btn-danger" id="btn-stop-stream">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                  Stop Stream
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button class="btn" id="btn-load-sample" style="font-size: 0.78rem;">
+                  Use Katomaran Sample
+                </button>
+              </div>
+            </div>
+
+            <div id="stream-message-banner" style="display: none; font-size: 0.78rem; padding: 6px 10px; border-radius: var(--radius-sm);"></div>
+          </div>
+        </div>
+
+        <!-- Visits History Card -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Recent Visit Sessions
+            </h3>
+            <span class="panel-subtitle">Session duration &amp; status</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Visit ID</th>
+                  <th>Visitor</th>
+                  <th>Entry Time</th>
+                  <th>Exit Time</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="visits-table-body">
+                <tr><td colspan="6" class="empty-state">Loading visit sessions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Real-time Entry/Exit Timeline -->
+      <div class="grid-right">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Entry &amp; Exit Event Stream
+            </h2>
+            <span class="panel-subtitle" id="events-count-label">0 events</span>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="events-filter-bar">
+            <div class="filter-pills">
+              <button class="filter-pill active" data-filter="">All Events</button>
+              <button class="filter-pill" data-filter="entry">Entries Only</button>
+              <button class="filter-pill" data-filter="exit">Exits Only</button>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Real database log</span>
+          </div>
+
+          <!-- Timeline Container -->
+          <div class="events-list" id="events-list-container">
+            <div class="empty-state">
+              <div class="empty-state-icon">📡</div>
+              <div class="empty-state-text">No visitor events recorded yet.<br>Start the video stream to begin tracking.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Information -->
+  <footer class="footer-bar">
+    <div class="footer-inner">
+      <div>
+        <strong>VisiTrace</strong> v1.0.0 &mdash; Intelligent Face Tracker with Auto-Registration and Visitor Counting.
+      </div>
+      <div class="system-diag-pill">
+        <span id="footer-engine-info">Engine: YOLOv8-Face + ArcFace (ONNX)</span>
+        <span id="footer-db-status">DB: SQLite (WAL)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal: Registered Visitors Directory -->
+  <div class="modal-overlay" id="modal-visitors">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="panel-title">Registered Visitors Directory</h3>
+        <button class="btn" style="padding: 4px 8px;" onclick="closeModal('modal-visitors')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Visitor ID</th>
+                <th>First Seen</th>
+                <th>Last Seen</th>
+                <th>Total Visits</th>
+                <th>Quality Score</th>
+              </tr>
+            </thead>
+            <tbody id="visitors-directory-body">
+              <tr><td colspan="5" class="empty-state">Loading visitors...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('modal-visitors')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: System Diagnostics & Health -->
+  <div class="modal-overlay" id="modal-health">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="panel-title">System Diagnostics &amp; Health</h3>
+        <button class="btn" style="padding: 4px 8px;" onclick="closeModal('modal-health')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="code-view" id="health-json-view">Loading diagnostics...</pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('modal-health')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Configuration Inspector -->
+  <div class="modal-overlay" id="modal-config">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="panel-title">Active Configuration</h3>
+        <button class="btn" style="padding: 4px 8px;" onclick="closeModal('modal-config')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="code-view" id="config-json-view">Loading configuration...</pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('modal-config')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Dashboard JavaScript Application -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
