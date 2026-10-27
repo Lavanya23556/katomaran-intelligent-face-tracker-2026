@@ -83,3 +83,58 @@ def test_stream_controls_validation(client):
     res_stop = client.post("/api/streams/stop")
     assert res_stop.status_code == 200
     assert res_stop.json()["success"] is True
+
+
+def test_deep_analytics_and_export_endpoints(client):
+    res_analytics = client.get("/api/analytics/deep")
+    assert res_analytics.status_code == 200
+    data = res_analytics.json()
+    assert "hourly_entries" in data
+    assert "dwell_time" in data
+    assert "visitor_breakdown" in data
+
+    res_events_csv = client.get("/api/export/events.csv")
+    assert res_events_csv.status_code == 200
+    assert "text/csv" in res_events_csv.headers["content-type"]
+    assert "event_id,visit_id,visitor_id" in res_events_csv.text
+
+    res_visitors_csv = client.get("/api/export/visitors.csv")
+    assert res_visitors_csv.status_code == 200
+    assert "text/csv" in res_visitors_csv.headers["content-type"]
+    assert "visitor_id,name" in res_visitors_csv.text
+    assert "total_visits" in res_visitors_csv.text
+
+
+def test_admin_visitor_management_endpoints(client, test_repo, sample_embedding):
+    # Setup test visitors
+    vid1, _, _ = test_repo.match_or_register_visitor(sample_embedding)
+    import numpy as np
+    np.random.seed(99)
+    emb2 = np.random.randn(512).astype(np.float32)
+    emb2 /= np.linalg.norm(emb2)
+    vid2, _, _ = test_repo.match_or_register_visitor(emb2)
+
+    # 1. PATCH rename
+    res_patch = client.patch(f"/api/visitors/{vid1}", json={"name": "Jane Doe"})
+    assert res_patch.status_code == 200
+    assert res_patch.json()["success"] is True
+
+    # Verify name updated in visitors list
+    res_list = client.get("/api/visitors")
+    v = next(item for item in res_list.json() if item["visitor_id"] == vid1)
+    assert v["name"] == "Jane Doe"
+
+    # 2. POST merge
+    res_merge = client.post("/api/visitors/merge", json={
+        "source_visitor_id": vid2,
+        "target_visitor_id": vid1
+    })
+    assert res_merge.status_code == 200
+    assert res_merge.json()["success"] is True
+
+    # 3. DELETE visitor
+    res_del = client.delete(f"/api/visitors/{vid1}")
+    assert res_del.status_code == 200
+    assert res_del.json()["success"] is True
+
+

@@ -8,16 +8,19 @@ import platform
 import psutil
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
 
 from src.api.schemas import (
     DailySummaryItem,
+    DeepAnalyticsResponse,
     EventItem,
     HealthResponse,
+    MergeVisitorsRequest,
     StartStreamRequest,
     StatsResponse,
     StreamActionResponse,
+    UpdateVisitorRequest,
     VisitItem,
     VisitorItem,
 )
@@ -166,4 +169,72 @@ def stream_preview(sm: StreamManager = Depends(get_stream_manager)):
     return StreamingResponse(
         sm.generate_mjpeg_stream(),
         media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
+@router.patch("/visitors/{visitor_id}", response_model=StreamActionResponse)
+def update_visitor_identity(
+    visitor_id: str,
+    payload: UpdateVisitorRequest,
+    repo: DatabaseRepository = Depends(get_repo),
+):
+    """Admin action: Update visitor name, notes, or metadata."""
+    ok = repo.update_visitor(visitor_id=visitor_id, name=payload.name, metadata=payload.metadata)
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"Visitor '{visitor_id}' not found.")
+    return {"success": True, "message": f"Visitor '{visitor_id}' identity updated."}
+
+
+@router.post("/visitors/merge", response_model=StreamActionResponse)
+def merge_visitor_identities(
+    payload: MergeVisitorsRequest,
+    repo: DatabaseRepository = Depends(get_repo),
+):
+    """Admin action: Merge two split identities of the same person."""
+    ok = repo.merge_visitors(
+        source_visitor_id=payload.source_visitor_id,
+        target_visitor_id=payload.target_visitor_id
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail="Failed to merge visitors. Ensure both IDs exist and are distinct.")
+    return {"success": True, "message": f"Successfully merged {payload.source_visitor_id} into {payload.target_visitor_id}."}
+
+
+@router.delete("/visitors/{visitor_id}", response_model=StreamActionResponse)
+def delete_visitor_identity(
+    visitor_id: str,
+    repo: DatabaseRepository = Depends(get_repo),
+):
+    """Admin action: Delete a false or unwanted visitor record."""
+    ok = repo.delete_visitor(visitor_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"Visitor '{visitor_id}' not found.")
+    return {"success": True, "message": f"Visitor '{visitor_id}' deleted."}
+
+
+@router.get("/analytics/deep", response_model=DeepAnalyticsResponse)
+def get_deep_analytics(repo: DatabaseRepository = Depends(get_repo)):
+    """Deep analytics: hourly distributions, dwell times, retention rates."""
+    return repo.get_deep_analytics()
+
+
+@router.get("/export/events.csv")
+def export_events_csv(repo: DatabaseRepository = Depends(get_repo)):
+    """Export all events as downloadable CSV."""
+    csv_data = repo.export_events_csv()
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=visitrace_events.csv"}
+    )
+
+
+@router.get("/export/visitors.csv")
+def export_visitors_csv(repo: DatabaseRepository = Depends(get_repo)):
+    """Export all registered visitors as downloadable CSV."""
+    csv_data = repo.export_visitors_csv()
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=visitrace_visitors.csv"}
     )

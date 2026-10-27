@@ -128,3 +128,73 @@ def test_database_persistence_across_restart(test_config, sample_embedding):
     vid_matched, is_new2, sim = repo2.match_or_register_visitor(sample_embedding)
     assert is_new2 is False
     assert vid_matched == vid
+
+
+def test_update_visitor_name(test_repo, sample_embedding):
+    vid, _, _ = test_repo.match_or_register_visitor(sample_embedding)
+    updated = test_repo.update_visitor(vid, name="Alice Smith")
+    assert updated is True
+
+    visitors = test_repo.get_visitors()
+    v = next(item for item in visitors if item["visitor_id"] == vid)
+    assert v["name"] == "Alice Smith"
+
+
+def test_merge_visitors(test_repo, sample_embedding):
+    vid1, _, _ = test_repo.match_or_register_visitor(sample_embedding)
+    np.random.seed(99)
+    other_emb = np.random.randn(512).astype(np.float32)
+    other_emb /= np.linalg.norm(other_emb)
+    vid2, _, _ = test_repo.match_or_register_visitor(other_emb)
+
+    # Start and finish visits for both
+    vst1, _ = test_repo.start_visit(vid1, "cam1", "entry1.jpg")
+    test_repo.finalize_visit(vst1, vid1, "cam1", "exit1.jpg")
+
+    vst2, _ = test_repo.start_visit(vid2, "cam1", "entry2.jpg")
+    test_repo.finalize_visit(vst2, vid2, "cam1", "exit2.jpg")
+
+    assert test_repo.get_stats()["unique_visitors"] == 2
+
+    # Merge vid2 into vid1
+    merged = test_repo.merge_visitors(source_visitor_id=vid2, target_visitor_id=vid1)
+    assert merged is True
+    assert test_repo.get_stats()["unique_visitors"] == 1
+
+    # vid1 should now have total_visits == 2
+    v1 = next(item for item in test_repo.get_all_visitors() if item["visitor_id"] == vid1)
+    assert v1["total_visits"] == 2
+
+
+def test_delete_visitor(test_repo, sample_embedding):
+    vid, _, _ = test_repo.match_or_register_visitor(sample_embedding)
+    vst, _ = test_repo.start_visit(vid, "cam1", "entry.jpg")
+    test_repo.finalize_visit(vst, vid, "cam1", "exit.jpg")
+
+    deleted = test_repo.delete_visitor(vid)
+    assert deleted is True
+    assert test_repo.get_stats()["unique_visitors"] == 0
+    assert len(test_repo.get_all_visitors()) == 0
+
+
+def test_deep_analytics_and_csv_export(test_repo, sample_embedding):
+    vid, _, _ = test_repo.match_or_register_visitor(sample_embedding)
+    vst, _ = test_repo.start_visit(vid, "cam1", "entry.jpg")
+    test_repo.finalize_visit(vst, vid, "cam1", "exit.jpg")
+
+    analytics = test_repo.get_deep_analytics()
+    assert "hourly_entries" in analytics
+    assert "dwell_time" in analytics
+    assert analytics["visitor_breakdown"]["total_unique"] == 1
+
+    events_csv = test_repo.export_events_csv()
+    assert "event_id,visit_id,visitor_id" in events_csv
+    assert vid in events_csv
+
+    visitors_csv = test_repo.export_visitors_csv()
+    assert "visitor_id,name" in visitors_csv
+    assert "total_visits" in visitors_csv
+    assert vid in visitors_csv
+
+
+

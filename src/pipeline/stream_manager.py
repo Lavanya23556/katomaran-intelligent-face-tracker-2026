@@ -86,10 +86,15 @@ class StreamManager:
                 return False, "Stream processing is already running. Please stop current stream first."
 
             stype = source_type or self.config.video_source_type
-            spath = source_path or (self.config.video_path if stype == "file" else self.config.rtsp_url)
+            if stype == "webcam":
+                spath = source_path if source_path is not None and str(source_path).strip() != "" else str(getattr(self.config, "webcam_device_id", 0))
+            else:
+                spath = source_path or (self.config.video_path if stype == "file" else self.config.rtsp_url)
 
-            if not spath:
+            if spath is None or str(spath).strip() == "":
                 return False, f"Missing source path/URL for source type '{stype}'."
+
+            spath = str(spath).strip()
 
             # Validate local file exists
             if stype == "file":
@@ -100,9 +105,16 @@ class StreamManager:
                     return False, msg
 
             # Validate RTSP format
-            if stype == "rtsp":
+            elif stype == "rtsp":
                 if not (spath.startswith("rtsp://") or spath.startswith("rtsps://")):
                     msg = f"Invalid RTSP URL format: '{spath}'."
+                    self._last_error = msg
+                    return False, msg
+
+            # Validate webcam index
+            elif stype == "webcam":
+                if not spath.isdigit():
+                    msg = f"Invalid webcam device ID '{spath}'. Must be a non-negative integer (e.g. 0, 1)."
                     self._last_error = msg
                     return False, msg
 
@@ -113,7 +125,13 @@ class StreamManager:
             self._total_frames_processed = 0
 
             # Initialize new processor
-            source_id = "rtsp_cam" if stype == "rtsp" else Path(spath).name
+            if stype == "webcam":
+                source_id = f"webcam_{spath}"
+            elif stype == "rtsp":
+                source_id = "rtsp_cam"
+            else:
+                source_id = Path(spath).name
+
             self._processor = FrameProcessor(
                 config=self.config,
                 repository=self.repo,
@@ -162,9 +180,14 @@ class StreamManager:
         max_reconnects = 5 if source_type == "rtsp" else 1
         reconnect_count = 0
 
+        is_webcam = (source_type == "webcam") or str(source_path).isdigit()
+        cap_target = int(source_path) if is_webcam else source_path
+
         while not self._stop_event.is_set():
-            logger.info(f"Opening video capture from: {source_path}")
-            cap = cv2.VideoCapture(source_path)
+            logger.info(f"Opening video capture from: {cap_target} ({source_type})")
+            cap = cv2.VideoCapture(cap_target)
+            if not cap.isOpened() and is_webcam and os.name == "nt":
+                cap = cv2.VideoCapture(cap_target, cv2.CAP_DSHOW)
 
             if not cap.isOpened():
                 err = f"Failed to connect or open video source: {source_path}"
@@ -191,6 +214,9 @@ class StreamManager:
                         else:
                             logger.info("Reached end of video file.")
                             break
+                    elif source_type == "webcam":
+                        time.sleep(0.03)
+                        continue
                     else:
                         # RTSP stream dropped: trigger reconnect
                         logger.warning("RTSP stream frame drop, attempting reconnect...")

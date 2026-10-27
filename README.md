@@ -200,15 +200,14 @@ python main.py --eval-video data/sample_videos/video_sample1.mp4 --max-frames 30
 
 ---
 
-## 8. Operating the Dashboard
+### Operating Input Sources:
+1. **Local Video File**: Select `Local Video File`, enter path `data/sample_videos/video_sample1.mp4`, and click **Start Stream**.
+2. **Live Webcam**: Select `Live Webcam (Device ID)`, enter `0` (or `1`, `2` for external USB cams), and click **Start Stream** for real-time live tracking.
+3. **RTSP Stream**: Select `RTSP Camera Stream`, enter your RTSP URL (e.g. `rtsp://127.0.0.1:8554/live`), and click **Start Stream**.
 
-1. **Start Stream**: Select **Local Video File** (or **RTSP Camera Stream**), input the path/URL, and click **Start Stream**.
-2. **Live Viewport**: Displays live face detection bounding boxes, confidence tags, visitor IDs (`VIS-XXXX`), and tracking numbers (`TRK-X`).
-3. **Event Timeline**: Updates dynamically as entries and exits occur, complete with cropped face images and local timestamps.
-4. **Filter Events**: Filter events by `All`, `Entries Only`, or `Exits Only`.
-5. **Visitors Directory**: Click **Visitors** in the navigation header to inspect all registered identities and visit frequencies.
-6. **Diagnostics**: Click **Diagnostics** to check SQLite integrity, memory utilization, and active model providers.
-7. **Stop Stream**: Click **Stop Stream** to cleanly stop processing and release OpenCV capture resources without stopping the web server.
+### Admin Identity Management & Analytics:
+- **Admin Identity Fixer**: Click **Admin** to rename visitors to real human names (e.g. "Alice Smith"), merge split profiles caused by extreme lighting shifts, or delete false detections.
+- **Deep Analytics**: Click **Analytics** to view average & max dwell times, peak traffic hours, retention percentages, and 24-hour traffic bar charts, plus instant one-click CSV export of visitors and events.
 
 ---
 
@@ -224,8 +223,14 @@ python main.py --eval-video data/sample_videos/video_sample1.mp4 --max-frames 30
 | `GET` | `/api/visitors` | List of registered visitor identities and metadata |
 | `GET` | `/api/visits` | Session lifecycle records with durations and entry/exit times |
 | `GET` | `/api/analytics/daily`| Daily aggregated visitor and visit counts |
+| `GET` | `/api/analytics/deep` | Deep dwell time metrics, retention rate, and 24-hour distribution |
+| `GET` | `/api/export/events.csv` | Download complete event log as CSV |
+| `GET` | `/api/export/visitors.csv` | Download registered visitors directory as CSV |
+| `PATCH`| `/api/visitors/{id}` | Admin: Assign human names / notes to a visitor ID |
+| `POST` | `/api/visitors/merge` | Admin: Merge split identities and transfer session history |
+| `DELETE`| `/api/visitors/{id}` | Admin: Purge a visitor record and associated history |
 | `GET` | `/api/config` | Sanitized active configuration (passwords masked) |
-| `POST`| `/api/streams/start` | Start ingestion on video file or RTSP stream |
+| `POST`| `/api/streams/start` | Start ingestion on video file, RTSP stream, or live webcam |
 | `POST`| `/api/streams/stop` | Cleanly terminate active ingestion |
 | `GET` | `/api/streams/preview`| Live multipart MJPEG video preview |
 
@@ -362,7 +367,7 @@ tests/test_tracking_lifecycle.py::test_compute_iou PASSED                [ 95%]
 tests/test_tracking_lifecycle.py::test_tracker_lifecycle PASSED          [ 97%]
 tests/test_tracking_lifecycle.py::test_visit_lifecycle_entry_and_grace_exit PASSED [100%]
 
-======================== 40 passed, 1 warning in 9.33s ========================
+======================== 46 passed, 1 warning in 16.01s ========================
 ```
 
 ---

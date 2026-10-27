@@ -206,9 +206,10 @@ async function fetchVisitorsDirectory() {
 
     let html = "";
     for (const v of visitors) {
+      const displayName = v.name ? `${v.visitor_id} (${v.name})` : v.visitor_id;
       html += `
         <tr>
-          <td class="font-mono"><strong>${v.visitor_id}</strong></td>
+          <td class="font-mono"><strong>${displayName}</strong></td>
           <td>${formatDateTime(v.first_seen_at)}</td>
           <td>${formatDateTime(v.last_seen_at)}</td>
           <td class="font-mono">${v.total_visits}</td>
@@ -247,6 +248,171 @@ async function fetchConfig() {
   }
 }
 
+// Fetch and render Deep Analytics
+async function fetchDeepAnalytics() {
+  try {
+    const res = await fetch("/api/analytics/deep");
+    if (!res.ok) throw new Error("Failed to load analytics");
+    const data = await res.json();
+
+    const dwell = data.dwell_time || {};
+    const breakdown = data.visitor_breakdown || {};
+
+    document.getElementById("analytics-avg-dwell").innerText = `${(dwell.avg_duration_seconds || 0).toFixed(1)}s`;
+    document.getElementById("analytics-max-dwell").innerText = `${(dwell.max_duration_seconds || 0).toFixed(1)}s`;
+    document.getElementById("analytics-peak-hour").innerText = data.peak_traffic_hour || "12:00";
+    document.getElementById("analytics-retention").innerText = `${(breakdown.retention_percentage || 0).toFixed(1)}%`;
+
+    // Render hourly distribution
+    const container = document.getElementById("analytics-hourly-bars");
+    const hourlyMap = data.hourly_entries || {};
+    const counts = Object.values(hourlyMap);
+    const maxCount = Math.max(1, ...counts);
+
+    let barsHtml = "";
+    for (let h = 0; h < 24; h++) {
+      const key = `${String(h).padStart(2, '0')}:00`;
+      const count = hourlyMap[key] || 0;
+      const heightPct = Math.max(6, (count / maxCount) * 100);
+      barsHtml += `
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end;" title="${key} — ${count} visit${count === 1 ? '' : 's'}">
+          <div style="width: 100%; background: var(--accent-teal); height: ${heightPct}%; border-radius: 2px 2px 0 0; opacity: ${count > 0 ? '1' : '0.25'}; transition: height 0.3s ease;"></div>
+          <span style="font-size: 0.55rem; color: var(--text-muted); margin-top: 3px;">${h % 4 === 0 ? h : ''}</span>
+        </div>
+      `;
+    }
+    container.innerHTML = barsHtml;
+
+    openModal("modal-analytics");
+  } catch (e) {
+    showToast("Failed to load deep analytics: " + e.message, true);
+  }
+}
+
+// Fetch and render Admin Identity Management
+async function fetchAdminVisitors() {
+  try {
+    const res = await fetch("/api/visitors?limit=200");
+    if (!res.ok) throw new Error("Failed to load visitors for admin");
+    const visitors = await res.json();
+
+    const tbody = document.getElementById("admin-visitors-tbody");
+    if (visitors.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No registered identities found in database.</td></tr>`;
+      openModal("modal-admin");
+      return;
+    }
+
+    let html = "";
+    for (const v of visitors) {
+      const cleanName = (v.name || "").replace(/"/g, '&quot;').replace(/'/g, "\\'");
+      html += `
+        <tr>
+          <td class="font-mono"><strong>${v.visitor_id}</strong></td>
+          <td>${v.name ? `<span style="font-weight: 500;">${v.name}</span>` : '<span style="color: var(--text-muted); font-style: italic;">(Unnamed)</span>'}</td>
+          <td class="font-mono">${v.total_visits}</td>
+          <td>${formatDateTime(v.last_seen_at)}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-sm" onclick="handleRenameVisitor('${v.visitor_id}', '${cleanName}')" style="padding: 3px 8px; font-size: 0.75rem;">Rename</button>
+            <button class="btn btn-sm" onclick="handleDeleteVisitor('${v.visitor_id}')" style="padding: 3px 8px; font-size: 0.75rem; margin-left: 6px; background: rgba(184, 51, 42, 0.12); color: var(--status-error); border-color: rgba(184, 51, 42, 0.3);">Delete</button>
+          </td>
+        </tr>
+      `;
+    }
+    tbody.innerHTML = html;
+    openModal("modal-admin");
+  } catch (e) {
+    showToast("Failed to load admin visitors: " + e.message, true);
+  }
+}
+
+// Admin Action: Rename Visitor
+window.handleRenameVisitor = async function(visitorId, currentName) {
+  const newName = prompt(`Enter human name / label for visitor ${visitorId}:`, currentName || "");
+  if (newName === null) return;
+
+  try {
+    const res = await fetch(`/api/visitors/${encodeURIComponent(visitorId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName.trim() })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Rename failed");
+
+    showToast(`Visitor ${visitorId} renamed to "${data.name || 'Unnamed'}"`);
+    fetchAdminVisitors();
+    fetchStats();
+  } catch (e) {
+    showToast(e.message, true);
+  }
+};
+
+// Admin Action: Merge Visitors
+async function handleMergeVisitors() {
+  const sourceId = document.getElementById("admin-merge-source").value.trim();
+  const targetId = document.getElementById("admin-merge-target").value.trim();
+
+  if (!sourceId || !targetId) {
+    showToast("Please enter both source and target Visitor IDs", true);
+    return;
+  }
+
+  if (sourceId === targetId) {
+    showToast("Source and Target cannot be identical", true);
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to merge ${sourceId} into ${targetId}?\nAll visits and events will be transferred, and ${sourceId} will be removed.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/visitors/merge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source_visitor_id: sourceId,
+        target_visitor_id: targetId
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Merge failed");
+
+    showToast(`Successfully merged ${sourceId} into ${targetId}`);
+    document.getElementById("admin-merge-source").value = "";
+    document.getElementById("admin-merge-target").value = "";
+    fetchAdminVisitors();
+    refreshAllData();
+  } catch (e) {
+    showToast(e.message, true);
+  }
+}
+
+// Admin Action: Delete Visitor
+window.handleDeleteVisitor = async function(visitorId) {
+  if (!confirm(`Permanently delete visitor ${visitorId} and associated history?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/visitors/${encodeURIComponent(visitorId)}`, {
+      method: "DELETE"
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Delete failed");
+
+    showToast(`Visitor ${visitorId} deleted`);
+    fetchAdminVisitors();
+    refreshAllData();
+  } catch (e) {
+    showToast(e.message, true);
+  }
+};
+
 // Start Stream Action
 async function handleStartStream() {
   const typeSelect = document.getElementById("select-source-type");
@@ -256,7 +422,7 @@ async function handleStartStream() {
   const sourceType = typeSelect.value;
   const sourcePath = pathInput.value.trim();
 
-  if (!sourcePath) {
+  if (!sourcePath && sourceType !== "webcam") {
     showToast("Please enter a valid video path or RTSP URL", true);
     return;
   }
@@ -270,7 +436,7 @@ async function handleStartStream() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         source_type: sourceType,
-        source_path: sourcePath,
+        source_path: sourcePath || "0",
         loop: true
       })
     });
@@ -324,8 +490,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btn-show-visitors").addEventListener("click", fetchVisitorsDirectory);
+  document.getElementById("btn-show-analytics").addEventListener("click", fetchDeepAnalytics);
+  document.getElementById("btn-show-admin").addEventListener("click", fetchAdminVisitors);
   document.getElementById("btn-show-health").addEventListener("click", fetchDiagnostics);
   document.getElementById("btn-show-config").addEventListener("click", fetchConfig);
+
+  // Admin merge button
+  const mergeBtn = document.getElementById("btn-admin-merge");
+  if (mergeBtn) {
+    mergeBtn.addEventListener("click", handleMergeVisitors);
+  }
 
   // Stream controls
   document.getElementById("btn-start-stream").addEventListener("click", handleStartStream);
@@ -344,6 +518,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!pathInput.value.startsWith("rtsp")) {
         pathInput.value = "rtsp://127.0.0.1:8554/live";
       }
+    } else if (e.target.value === "webcam") {
+      pathInput.placeholder = "0 (Default device index)";
+      pathInput.value = "0";
     } else {
       pathInput.placeholder = "e.g. data/sample_videos/video_sample1.mp4";
       pathInput.value = "data/sample_videos/video_sample1.mp4";

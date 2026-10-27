@@ -13,9 +13,14 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 class SystemConfig(BaseModel):
     # Video input source
-    video_source_type: Literal["file", "rtsp"] = Field(
+    video_source_type: Literal["file", "rtsp", "webcam"] = Field(
         default="file",
-        description="Source type: 'file' for video file or 'rtsp' for camera stream"
+        description="Source type: 'file' for video file, 'rtsp' for camera stream, or 'webcam' for live camera"
+    )
+    webcam_device_id: int = Field(
+        default=0,
+        ge=0,
+        description="Webcam device index (default 0 for standard USB/built-in webcam)"
     )
     video_path: str = Field(
         default="data/sample_videos/video_sample1.mp4",

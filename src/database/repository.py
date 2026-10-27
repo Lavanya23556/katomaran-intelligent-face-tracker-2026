@@ -326,7 +326,7 @@ class DatabaseRepository:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT visitor_id, first_seen_at, last_seen_at, total_visits, quality_score, metadata_json
+                SELECT visitor_id, name, first_seen_at, last_seen_at, total_visits, quality_score, metadata_json
                 FROM visitors
                 ORDER BY first_seen_at DESC
                 LIMIT ? OFFSET ?
@@ -346,6 +346,9 @@ class DatabaseRepository:
                     item["metadata"] = {}
                 results.append(item)
             return results
+
+    # Backward-compatible alias
+    get_visitors = get_all_visitors
 
     def get_visits(
         self,
@@ -416,3 +419,208 @@ class DatabaseRepository:
                 "error": str(e),
                 "db_path": self.db_path,
             }
+
+    def update_visitor(
+        self,
+        visitor_id: str,
+        name: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Update a visitor's name or metadata (Admin control)."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT metadata_json FROM visitors WHERE visitor_id = ?", (visitor_id,))
+            row = cursor.fetchone()
+            if not row:
+                return False
+
+            updates = []
+            params = []
+            if name is not None:
+                updates.append("name = ?")
+                params.append(name.strip())
+
+            if metadata is not None:
+                existing_meta = {}
+                if row["metadata_json"]:
+                    try:
+                        existing_meta = json.loads(row["metadata_json"])
+                    except Exception:
+                        pass
+                existing_meta.update(metadata)
+                updates.append("metadata_json = ?")
+                params.append(json.dumps(existing_meta))
+
+            if updates:
+                params.append(visitor_id)
+                query = f"UPDATE visitors SET {', '.join(updates)} WHERE visitor_id = ?"
+                conn.execute(query, params)
+                conn.commit()
+            return True
+
+    def merge_visitors(self, source_visitor_id: str, target_visitor_id: str) -> bool:
+        """
+        Merge source_visitor_id into target_visitor_id (Admin identity fix).
+        Reassigns all visits and events from source to target, recalculates visit count,
+        deletes source, and updates memory cache transactionally.
+        """
+        if source_visitor_id == target_visitor_id:
+            return False
+
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            # Verify both visitors exist
+            cursor.execute("SELECT 1 FROM visitors WHERE visitor_id = ?", (source_visitor_id,))
+            if not cursor.fetchone():
+                return False
+            cursor.execute("SELECT 1 FROM visitors WHERE visitor_id = ?", (target_visitor_id,))
+            if not cursor.fetchone():
+                return False
+
+            # Update visits
+            conn.execute(
+                "UPDATE visits SET visitor_id = ? WHERE visitor_id = ?",
+                (target_visitor_id, source_visitor_id)
+            )
+
+            # Update events
+            conn.execute(
+                "UPDATE events SET visitor_id = ? WHERE visitor_id = ?",
+                (target_visitor_id, source_visitor_id)
+            )
+
+            # Recalculate total visits and last seen on target
+            cursor.execute("SELECT COUNT(*), MAX(entry_at) FROM visits WHERE visitor_id = ?", (target_visitor_id,))
+            count_row = cursor.fetchone()
+            total_vst = count_row[0] or 1
+            last_seen = count_row[1]
+
+            if last_seen:
+                conn.execute(
+                    "UPDATE visitors SET total_visits = ?, last_seen_at = ? WHERE visitor_id = ?",
+                    (total_vst, last_seen, target_visitor_id)
+                )
+            else:
+                conn.execute(
+                    "UPDATE visitors SET total_visits = ? WHERE visitor_id = ?",
+                    (total_vst, target_visitor_id)
+                )
+
+            # Delete source visitor
+            conn.execute("DELETE FROM visitors WHERE visitor_id = ?", (source_visitor_id,))
+            conn.commit()
+
+        # Update cache
+        if source_visitor_id in self._embedding_cache:
+            del self._embedding_cache[source_visitor_id]
+
+        return True
+
+    def delete_visitor(self, visitor_id: str) -> bool:
+        """Delete a visitor and cascade delete their visits and events."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1 FROM visitors WHERE visitor_id = ?", (visitor_id,))
+            if not cursor.fetchone():
+                return False
+            conn.execute("DELETE FROM visitors WHERE visitor_id = ?", (visitor_id,))
+            conn.commit()
+
+        if visitor_id in self._embedding_cache:
+            del self._embedding_cache[visitor_id]
+        return True
+
+    def get_deep_analytics(self) -> Dict[str, Any]:
+        """Deep analytics: hourly traffic, dwell times, and returning visitor breakdown."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+
+            # Hourly distribution (00 to 23)
+            cursor.execute(
+                """
+                SELECT SUBSTR(timestamp, 12, 2) as hour, COUNT(*) as count
+                FROM events
+                WHERE event_type = 'entry'
+                GROUP BY hour
+                ORDER BY hour ASC
+                """
+            )
+            hourly_rows = cursor.fetchall()
+            hourly_data = {f"{h:02d}:00": 0 for h in range(24)}
+            for r in hourly_rows:
+                h_str = r["hour"]
+                if h_str and h_str.isdigit():
+                    hourly_data[f"{int(h_str):02d}:00"] = r["count"]
+
+            # Dwell time stats from completed visits
+            cursor.execute(
+                """
+                SELECT
+                    COUNT(*) as completed_count,
+                    AVG(duration_seconds) as avg_duration,
+                    MIN(duration_seconds) as min_duration,
+                    MAX(duration_seconds) as max_duration
+                FROM visits
+                WHERE status = 'completed' AND duration_seconds IS NOT NULL
+                """
+            )
+            d_row = cursor.fetchone()
+            dwell_stats = {
+                "completed_visits": d_row["completed_count"] or 0,
+                "avg_duration_seconds": round(float(d_row["avg_duration"] or 0.0), 1),
+                "min_duration_seconds": round(float(d_row["min_duration"] or 0.0), 1),
+                "max_duration_seconds": round(float(d_row["max_duration"] or 0.0), 1),
+            }
+
+            # Returning vs New visitors
+            cursor.execute("SELECT COUNT(*) FROM visitors WHERE total_visits = 1")
+            new_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM visitors WHERE total_visits > 1")
+            returning_count = cursor.fetchone()[0]
+            total_visitors = new_count + returning_count
+
+            retention_rate = (returning_count / total_visitors * 100.0) if total_visitors > 0 else 0.0
+
+            # Peak Hour
+            peak_hour = max(hourly_data.items(), key=lambda x: x[1]) if hourly_data else ("12:00", 0)
+
+            return {
+                "hourly_entries": hourly_data,
+                "dwell_time": dwell_stats,
+                "visitor_breakdown": {
+                    "total_unique": total_visitors,
+                    "first_time_visitors": new_count,
+                    "returning_visitors": returning_count,
+                    "retention_percentage": round(retention_rate, 1),
+                },
+                "peak_traffic_hour": peak_hour[0],
+                "peak_traffic_count": peak_hour[1],
+            }
+
+    def export_events_csv(self) -> str:
+        """Generate CSV string of all logged events."""
+        import io, csv
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT event_id, visit_id, visitor_id, event_type, timestamp, image_path, track_id, source_id, confidence FROM events ORDER BY timestamp DESC")
+            rows = cursor.fetchall()
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(["event_id", "visit_id", "visitor_id", "event_type", "timestamp", "image_path", "track_id", "source_id", "confidence"])
+            for r in rows:
+                writer.writerow(list(r))
+            return output.getvalue()
+
+    def export_visitors_csv(self) -> str:
+        """Generate CSV string of all registered visitors."""
+        import io, csv
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT visitor_id, name, first_seen_at, last_seen_at, total_visits, quality_score FROM visitors ORDER BY first_seen_at DESC")
+            rows = cursor.fetchall()
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(["visitor_id", "name", "first_seen_at", "last_seen_at", "total_visits", "quality_score"])
+            for r in rows:
+                writer.writerow(list(r))
+            return output.getvalue()

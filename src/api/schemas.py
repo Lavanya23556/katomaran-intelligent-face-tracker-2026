@@ -49,6 +49,7 @@ class EventItem(BaseModel):
 
 class VisitorItem(BaseModel):
     visitor_id: str
+    name: Optional[str] = None
     first_seen_at: str
     last_seen_at: str
     total_visits: int
@@ -72,3 +73,21 @@ class DailySummaryItem(BaseModel):
     visit_date: str
     unique_visitors: int
     total_visits: int
+
+
+class UpdateVisitorRequest(BaseModel):
+    name: Optional[str] = Field(default=None, description="Human-readable name or label (e.g. 'John Doe')")
+    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Custom metadata tags, department, notes")
+
+
+class MergeVisitorsRequest(BaseModel):
+    source_visitor_id: str = Field(description="Visitor ID to be merged and removed")
+    target_visitor_id: str = Field(description="Target Visitor ID to keep and inherit visits/events")
+
+
+class DeepAnalyticsResponse(BaseModel):
+    hourly_entries: Dict[str, int]
+    dwell_time: Dict[str, Any]
+    visitor_breakdown: Dict[str, Any]
+    peak_traffic_hour: str
+    peak_traffic_count: int

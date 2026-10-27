@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
 
 CREATE TABLE IF NOT EXISTS visitors (
     visitor_id TEXT PRIMARY KEY,
+    name TEXT,
     first_seen_at TEXT NOT NULL,
     last_seen_at TEXT NOT NULL,
     embedding_blob BLOB NOT NULL,
@@ -82,8 +83,14 @@ def init_database(db_path: str) -> None:
         conn.execute("PRAGMA busy_timeout = 5000;")
         conn.executescript(INIT_SCHEMA_SQL)
 
-        # Record schema version
+        # Ensure 'name' column exists in visitors table
         cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(visitors);")
+        existing_cols = [row[1] for row in cursor.fetchall()]
+        if "name" not in existing_cols:
+            conn.execute("ALTER TABLE visitors ADD COLUMN name TEXT;")
+
+        # Record schema version
         cursor.execute("SELECT MAX(version) FROM schema_version")
         row = cursor.fetchone()
         current_version = row[0] if row and row[0] is not None else 0
