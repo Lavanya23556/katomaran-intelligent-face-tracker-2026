@@ -58,6 +58,7 @@ cover/
 
 # Django stuff:
 *.log
+!sample_outputs/**/*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -232,8 +233,7 @@ data/
 weights/*.pt
 weights/*.onnx
 !weights/.gitkeep
-sample_outputs/images/
-!sample_outputs/images/.gitkeep
+# sample_outputs/images is committed as evaluation sample outputs
 *.mp4
 *.avi
 *.mkv

@@ -1,0 +1,50 @@
+2026-10-27 09:25:43 [INFO] [visitrace] Loaded YOLO face detector from weights/yolov8n-face.pt with classes: {0: 'face'}
+2026-10-27 09:25:43 [INFO] [visitrace] Loaded InsightFace ArcFace model from weights/w600k_mbf.onnx (Input: input.1, Output: 516, Provider: ['CPUExecutionProvider'])
+2026-10-27 09:25:43 [INFO] [visitrace] Evaluating video file: data/sample_videos/video_sample1.mp4
+2026-10-27 09:25:47 [INFO] [visitrace] [ENTRY] Visitor=VIS-0002 Visit=VST-A436790D Event=EVT-DC6FDE68 Track=1 NewRegistration=False Sim=0.86
+2026-10-27 09:25:49 [INFO] [visitrace] [ENTRY] Visitor=VIS-0017 Visit=VST-4263A472 Event=EVT-8410E970 Track=10 NewRegistration=False Sim=1.00
+2026-10-27 09:25:49 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0017 reappeared. Exit cancelled.
+2026-10-27 09:25:49 [INFO] [visitrace] [ENTRY] Visitor=VIS-0004 Visit=VST-70A66554 Event=EVT-FD61F1D6 Track=14 NewRegistration=False Sim=0.75
+2026-10-27 09:25:49 [INFO] [visitrace] Processed 50 frames | Active Tracks: 2 | Unique Visitors: 32
+2026-10-27 09:25:50 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0017 reappeared. Exit cancelled.
+2026-10-27 09:25:50 [INFO] [visitrace] [ENTRY] Visitor=VIS-0018 Visit=VST-C7204F8C Event=EVT-A5AB81D6 Track=23 NewRegistration=False Sim=1.00
+2026-10-27 09:25:50 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0018 reappeared. Exit cancelled.
+2026-10-27 09:25:50 [INFO] [visitrace] [ENTRY] Visitor=VIS-0013 Visit=VST-AA2001EC Event=EVT-0F66B78D Track=27 NewRegistration=False Sim=0.81
+2026-10-27 09:25:51 [INFO] [visitrace] [ENTRY] Visitor=VIS-0019 Visit=VST-EF86DD66 Event=EVT-8751619B Track=37 NewRegistration=False Sim=1.00
+2026-10-27 09:25:52 [INFO] [visitrace] [ENTRY] Visitor=VIS-0020 Visit=VST-AD901361 Event=EVT-0FDCF2F3 Track=39 NewRegistration=False Sim=1.00
+2026-10-27 09:25:52 [INFO] [visitrace] [ENTRY] Visitor=VIS-0021 Visit=VST-6476F750 Event=EVT-1167001C Track=45 NewRegistration=False Sim=1.00
+2026-10-27 09:25:52 [INFO] [visitrace] [EXIT] Visitor=VIS-0002 Visit=VST-A436790D Event=EVT-A6C86725 (Inferred after 5.0s absence)
+2026-10-27 09:25:52 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0013 reappeared. Exit cancelled.
+2026-10-27 09:25:52 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0020 reappeared. Exit cancelled.
+2026-10-27 09:25:52 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0021 reappeared. Exit cancelled.
+2026-10-27 09:25:53 [INFO] [visitrace] Processed 100 frames | Active Tracks: 6 | Unique Visitors: 32
+2026-10-27 09:25:53 [INFO] [visitrace] [ENTRY] Visitor=VIS-0022 Visit=VST-237AD5AD Event=EVT-258E04EE Track=52 NewRegistration=False Sim=1.00
+2026-10-27 09:25:53 [INFO] [visitrace] [ENTRY] Visitor=VIS-0012 Visit=VST-2C99B2CE Event=EVT-9BF71FA6 Track=57 NewRegistration=False Sim=0.75
+2026-10-27 09:25:53 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0012 reappeared. Exit cancelled.
+2026-10-27 09:25:53 [INFO] [visitrace] [ENTRY] Visitor=VIS-0023 Visit=VST-A5C178C7 Event=EVT-C04C6702 Track=60 NewRegistration=False Sim=1.00
+2026-10-27 09:25:53 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0021 reappeared. Exit cancelled.
+2026-10-27 09:25:54 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0013 reappeared. Exit cancelled.
+2026-10-27 09:25:54 [INFO] [visitrace] [ENTRY] Visitor=VIS-0024 Visit=VST-25506862 Event=EVT-6EFC69C7 Track=71 NewRegistration=False Sim=1.00
+2026-10-27 09:25:54 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0021 reappeared. Exit cancelled.
+2026-10-27 09:25:54 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0013 reappeared. Exit cancelled.
+2026-10-27 09:25:55 [INFO] [visitrace] [ENTRY] Visitor=VIS-0014 Visit=VST-D32F48E9 Event=EVT-ECC37D00 Track=82 NewRegistration=False Sim=0.66
+2026-10-27 09:25:55 [INFO] [visitrace] [EXIT] Visitor=VIS-0017 Visit=VST-4263A472 Event=EVT-327227C1 (Inferred after 5.0s absence)
+2026-10-27 09:25:55 [INFO] [visitrace] [EXIT] Visitor=VIS-0004 Visit=VST-70A66554 Event=EVT-B0646D9A (Inferred after 5.0s absence)
+2026-10-27 09:25:55 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0022 reappeared. Exit cancelled.
+2026-10-27 09:25:55 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0014 reappeared. Exit cancelled.
+2026-10-27 09:25:55 [INFO] [visitrace] [ENTRY] Visitor=VIS-0026 Visit=VST-0F4DB3F3 Event=EVT-A8C342B7 Track=92 NewRegistration=False Sim=0.72
+2026-10-27 09:25:56 [INFO] [visitrace] [GRACE RESTORE] Visitor VIS-0024 reappeared. Exit cancelled.
+2026-10-27 09:25:56 [INFO] [visitrace] Processed 150 frames | Active Tracks: 6 | Unique Visitors: 32
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0018 Visit=VST-C7204F8C Event=EVT-7DA773E2 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0013 Visit=VST-AA2001EC Event=EVT-A7F49AFB (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0019 Visit=VST-EF86DD66 Event=EVT-65310B74 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0020 Visit=VST-AD901361 Event=EVT-0BD242D9 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0021 Visit=VST-6476F750 Event=EVT-AF41462C (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0022 Visit=VST-237AD5AD Event=EVT-89872635 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0012 Visit=VST-2C99B2CE Event=EVT-C15232D1 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0023 Visit=VST-A5C178C7 Event=EVT-EE313D08 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0024 Visit=VST-25506862 Event=EVT-514A58D8 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0014 Visit=VST-D32F48E9 Event=EVT-6C9A4E26 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] [EXIT] Visitor=VIS-0026 Visit=VST-0F4DB3F3 Event=EVT-013442F7 (Inferred after 5.0s absence)
+2026-10-27 09:25:56 [INFO] [visitrace] Closed all active visits (Reason: stream_closed)
+2026-10-27 09:25:56 [INFO] [visitrace] Evaluation completed in 13.02s (11.5 FPS) | Frames: 150 | Unique Visitors: 32 | Entries: 56 | Exits: 56
