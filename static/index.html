@@ -121,15 +121,15 @@
               <div class="input-group" style="max-width: 160px; min-width: 130px;">
                 <label class="input-label" for="select-source-type">Input Mode</label>
                 <select id="select-source-type" class="input-field">
-                  <option value="file" selected>Local Video File</option>
-                  <option value="webcam">Live Webcam (Device 0)</option>
+                  <option value="webcam" selected>Live Webcam (Device 0)</option>
+                  <option value="file">Local Video File</option>
                   <option value="rtsp">RTSP Camera Stream</option>
                 </select>
               </div>
 
               <div class="input-group">
-                <label class="input-label" for="input-source-path">Source Path or RTSP URL</label>
-                <input type="text" id="input-source-path" class="input-field font-mono" value="data/sample_videos/video_sample1.mp4" placeholder="e.g. data/sample_videos/video_sample1.mp4 or rtsp://user:pass@host:554/live">
+                <label class="input-label" for="input-source-path">Source Path / Device Index / RTSP URL</label>
+                <input type="text" id="input-source-path" class="input-field font-mono" value="0" placeholder="0 (Default device index)">
               </div>
             </div>
 

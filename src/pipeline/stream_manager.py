@@ -185,9 +185,12 @@ class StreamManager:
 
         while not self._stop_event.is_set():
             logger.info(f"Opening video capture from: {cap_target} ({source_type})")
-            cap = cv2.VideoCapture(cap_target)
-            if not cap.isOpened() and is_webcam and os.name == "nt":
+            if is_webcam and os.name == "nt":
                 cap = cv2.VideoCapture(cap_target, cv2.CAP_DSHOW)
+                if not cap.isOpened():
+                    cap = cv2.VideoCapture(cap_target)
+            else:
+                cap = cv2.VideoCapture(cap_target)
 
             if not cap.isOpened():
                 err = f"Failed to connect or open video source: {source_path}"

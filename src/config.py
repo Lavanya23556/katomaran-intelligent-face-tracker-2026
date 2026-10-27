@@ -129,6 +129,12 @@ class SystemConfig(BaseModel):
         description="FastAPI port"
     )
 
+    # Stream auto-start
+    auto_start_stream: bool = Field(
+        default=False,
+        description="Whether to automatically initiate stream processing upon server launch"
+    )
+
     # Simulation / Demo mode flag
     mock_mode: bool = Field(
         default=False,

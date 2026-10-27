@@ -86,6 +86,19 @@ async def lifespan(app: FastAPI):
     )
     app.state.stream_manager = stream_manager
 
+    # Auto-start stream if configured and not mock_mode
+    if getattr(config, "auto_start_stream", False) and not config.mock_mode:
+        source_type = config.video_source_type
+        if source_type == "webcam":
+            source_path = str(config.webcam_device_id)
+        elif source_type == "rtsp":
+            source_path = config.rtsp_url or ""
+        else:
+            source_path = config.video_path
+
+        logger.info(f"Auto-initiating live stream capture on {source_type}: {source_path}")
+        stream_manager.start_stream(source_type=source_type, source_path=source_path, loop=True)
+
     yield
 
     # Clean shutdown
